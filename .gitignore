@@ -1,0 +1,7 @@
+*.exe
+*.dmg
+*.zip
+*.log
+.DS_Store
+node_modules/
+release-private/
