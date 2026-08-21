@@ -13,7 +13,7 @@ AI Switch 是一款纯本机桌面工具，用于手动查看本人多个 Codex 
 - 桌面界面层（HTML、CSS、前端 JavaScript）
 - 安全更新协议及校验实现
 - 产品文档、更新记录和问题反馈模板
-- Windows / macOS 正式发布包及校验文件
+- Windows 正式发布包，以及 macOS / Linux 预览包和校验文件
 
 授权、凭证存储、账户切换等核心实现暂不公开，后续计划逐步开放。完整源码在私有仓库中由作者与合伙人通过 Git 分支、Pull Request 和代码审查协同开发。
 
@@ -24,13 +24,22 @@ AI Switch 是一款纯本机桌面工具，用于手动查看本人多个 Codex 
 - 本机账户切换与会话记录保留
 - OpenAI、DeepSeek 等官方 API 及兼容中转站的模型发现与切换
 - 会话、本机备份、授权修复、项目方案、诊断和系统托盘管理
-- Windows / macOS 更新检查、签名校验、并排安装和失败回滚
+- Windows / macOS / Linux 更新检查、完整包校验、并排安装和失败回滚
 
 ## 下载与更新
 
-请只从本仓库的 **Releases** 下载。AI Switch 没有开发者后台，更新文件直接托管在 GitHub Releases：客户端会验证发布签名和 SHA-256，且只有用户点击后才下载和重启安装。
+请只从本仓库的 **Releases** 下载。AI Switch 没有开发者后台，安装与更新文件直接托管在 GitHub Releases。
 
-Windows 安装包为单个 EXE；macOS 将分别提供 Apple Silicon 和 Intel 的签名、notarized 安装包。
+- [下载最新版 / Releases](https://github.com/GitHub1874/ai-switch/releases)
+- [下载 v1.13.0-preview.1（macOS / Linux 预览版）](https://github.com/GitHub1874/ai-switch/releases/tag/v1.13.0-preview.1)
+
+当前预览版提供：
+
+- macOS Universal DMG / ZIP：同时支持 Apple Silicon 与 Intel。
+- Linux x64 / ARM64 AppImage，以及 amd64 / arm64 deb。
+- Linux 适配 OpenAI 官方桌面端当前支持的 Ubuntu 24.04/26.04、Debian 13、Fedora 43/44；安装 AI Switch 前仍需单独安装官方 Codex/ChatGPT 桌面应用。
+
+macOS 预览包尚未使用 Apple Developer ID 签名和 notarization，只用于测试，首次打开需按 Release 说明操作。正式稳定版会在证书、公证及真机回归完成后发布。
 
 ## 隐私
 
