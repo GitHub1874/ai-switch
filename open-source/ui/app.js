@@ -113,6 +113,11 @@
   const refreshExtensionsButton = document.querySelector("#refresh-extensions");
   const extensionList = document.querySelector("#extension-list");
   const exportDiagnosticsButton = document.querySelector("#export-diagnostics");
+  const codexRuntimeTitle = document.querySelector("#codex-runtime-title");
+  const codexRuntimeDetail = document.querySelector("#codex-runtime-detail");
+  const codexRuntimePath = document.querySelector("#codex-runtime-path");
+  const detectCodexRuntimeButton = document.querySelector("#detect-codex-runtime");
+  const selectCodexRuntimeButton = document.querySelector("#select-codex-runtime");
 
   let accounts = [];
   let accountsLoaded = false;
@@ -144,6 +149,7 @@
   let localBackups = [];
   let localProjects = [];
   let localExtensions = [];
+  let codexRuntime = null;
 
   const isDesktopHost = Boolean(window.chrome?.webview);
   const apiProviderPresets = {
@@ -1256,20 +1262,88 @@
     }
   }
 
+  function renderCodexRuntime() {
+    const runtime = codexRuntime || { available: false, error: "尚未检测" };
+    const sourceNames = {
+      "official-app": "官方桌面端",
+      saved: "已保存位置",
+      selected: "手动选择",
+      environment: "环境配置",
+      path: "系统 PATH",
+      development: "开发环境"
+    };
+    codexRuntimeTitle.textContent = runtime.available ? "Codex 运行环境可用" : "需要配置 Codex 运行环境";
+    codexRuntimeTitle.classList.toggle("runtime-missing", !runtime.available);
+    codexRuntimeDetail.textContent = runtime.available
+      ? `${sourceNames[runtime.source] || "本机安装"} · ${runtime.version || "已通过验证"}`
+      : (runtime.error || "没有找到可用的官方 Codex");
+    codexRuntimePath.hidden = !runtime.path;
+    codexRuntimePath.textContent = runtime.path || "";
+    detectCodexRuntimeButton.disabled = busy;
+    selectCodexRuntimeButton.disabled = busy;
+  }
+
+  async function detectCodexRuntime() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const payload = await api("/api/local/runtime/codex/auto-detect", { method: "POST" });
+      codexRuntime = payload.runtime;
+      renderCodexRuntime();
+      showToast(codexRuntime.available ? "已找到并验证官方 Codex" : codexRuntime.error, codexRuntime.available ? "success" : "error");
+    } catch (error) {
+      showToast(error.message, "error");
+    } finally { setBusy(false); renderCodexRuntime(); }
+  }
+
+  async function saveSelectedCodexRuntime(selectedPath) {
+    if (busy || !selectedPath) return;
+    setBusy(true);
+    try {
+      const payload = await api("/api/local/runtime/codex/select", {
+        method: "POST",
+        body: { path: selectedPath }
+      });
+      codexRuntime = payload.runtime;
+      renderCodexRuntime();
+      showToast("Codex 运行环境已验证并保存", "success");
+    } catch (error) {
+      showToast(error.message, "error");
+    } finally { setBusy(false); renderCodexRuntime(); }
+  }
+
+  function requestCodexRuntimeSelection() {
+    if (busy) return;
+    if (window.chrome?.webview) {
+      window.chrome.webview.postMessage("select-codex-runtime");
+      return;
+    }
+    window.open("ai-switch://select-codex-runtime", "_blank");
+  }
+
+  function handleHostMessage(message) {
+    if (message?.type === "codex-runtime-selected" && message.path) {
+      saveSelectedCodexRuntime(message.path);
+    }
+  }
+
   async function loadLocalData() {
-    const [backupPayload, projectPayload, extensionPayload] = await Promise.all([
+    const [backupPayload, projectPayload, extensionPayload, runtimePayload] = await Promise.all([
       api("/api/local/backups"),
       api("/api/local/projects"),
-      api("/api/local/extensions")
+      api("/api/local/extensions"),
+      api("/api/local/runtime/codex")
     ]);
     localBackups = backupPayload.backups || [];
     localProjects = projectPayload.projects || [];
     localExtensions = extensionPayload.extensions || [];
+    codexRuntime = runtimePayload.runtime || null;
     localLoaded = true;
     renderAuthCenter();
     renderBackups();
     renderProjects();
     renderExtensions();
+    renderCodexRuntime();
   }
 
   async function switchView(view) {
@@ -1973,6 +2047,12 @@
       for (const panel of localPanels) panel.hidden = panel.dataset.localPanel !== tab.dataset.localTab;
     });
   }
+  detectCodexRuntimeButton.addEventListener("click", detectCodexRuntime);
+  selectCodexRuntimeButton.addEventListener("click", requestCodexRuntimeSelection);
+  if (window.chrome?.webview) {
+    window.chrome.webview.addEventListener("message", (event) => handleHostMessage(event.data));
+  }
+  window.addEventListener("ai-switch-host-message", (event) => handleHostMessage(event.detail));
   refreshAuthCenterButton.addEventListener("click", async () => {
     await loadAccounts();
     renderAuthCenter();
