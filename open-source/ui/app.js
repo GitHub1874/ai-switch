@@ -131,6 +131,7 @@
   let updatePollTimer = null;
   let updateStatusTimer = null;
   let notifiedUpdateVersion = null;
+  let notifiedUpdateError = null;
   let credentialSwitchCapability = { switchingSupported: true, message: "" };
   let selectedAccountId = null;
   let dragState = null;
@@ -1428,6 +1429,12 @@
     if (status.status === "available" && latest && notifiedUpdateVersion !== latest) {
       notifiedUpdateVersion = latest;
       showToast(`发现 AI Switch v${latest}，请到“管理 → 版本信息”更新`);
+    }
+    if (status.status === "error" && status.error && notifiedUpdateError !== status.error) {
+      notifiedUpdateError = status.error;
+      showToast(`更新检查失败：${status.error}`, "error");
+    } else if (status.status !== "error") {
+      notifiedUpdateError = null;
     }
     updateStateCard.classList.toggle("has-error", status.status === "error");
 
