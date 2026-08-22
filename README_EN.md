@@ -33,7 +33,7 @@ Download only from this repository's **Releases** page. AI Switch has no develop
 The app checks for stable updates but never downloads or silently installs them without user action. Users choose **Download update** and then **Restart and update**. Pushing code, creating a tag, or uploading ordinary files does not publish a client update. See the [Update Policy](UPDATE_POLICY.md) for the complete rules.
 
 - [Latest downloads / Releases](https://github.com/GitHub1874/ai-switch/releases)
-- [v1.13.1-preview.1 for Windows, macOS, and Linux](https://github.com/GitHub1874/ai-switch/releases/tag/v1.13.1-preview.1)
+- [v1.14.0-preview.1 for Windows, macOS, and Linux](https://github.com/GitHub1874/ai-switch/releases/tag/v1.14.0-preview.1)
 
 The current preview provides:
 
