@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "version": "1.14.1-preview.1",
+  "minimumVersion": "1.13.0",
+  "mandatory": false,
+  "rollout": 100,
+  "publishedAt": "2026-08-22T10:59:33.135Z",
+  "notes": [
+    "Reuse an installed official Codex runtime with verified manual fallback",
+    "Windows package reduced by removing the duplicated Codex binary",
+    "Cross-platform runtime discovery for Windows, macOS and Linux"
+  ],
+  "packages": {
+    "win32-x64": {
+      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.14.1-preview.1/AI-Switch-Windows-x64-v1.14.1-preview.1.zip",
+      "sha256": "27828e002e2c9dc9ff91c59381c9f7423a35041158b820a98325e845ef9c300a",
+      "size": 36393266
+    }
+  },
+  "signature": "ykCRSYssJMcb4fHrkYDhWoo+btihsFJjN18kpETIgE1LYWP3TNN269u6mufBBxKAyQ8EVHZJHGF2gvlhJKuzCQ=="
+}
