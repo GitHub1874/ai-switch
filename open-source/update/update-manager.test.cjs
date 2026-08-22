@@ -95,3 +95,28 @@ test("secure defaults keep updates disabled until a manifest and verification ke
   assert.equal(status.configured, false);
   assert.equal(status.status, "disabled");
 });
+
+test("requires a full host update when a core candidate needs a newer desktop shell", async (t) => {
+  const root = await fsp.mkdtemp(path.join(os.tmpdir(), "ai-switch-update-host-"));
+  t.after(() => fsp.rm(root, { recursive: true, force: true }));
+  const bytes = Buffer.from("core package");
+  const { publicKey, privateKey } = crypto.generateKeyPairSync("ed25519");
+  const manifest = signedManifest(privateKey, bytes, { minimumHostVersion: "2.0.0" });
+  const manager = createUpdateManager({
+    dataRoot: root,
+    namespace: "core",
+    updateKind: "core",
+    currentVersion: "1.5.0",
+    hostVersion: "1.4.0",
+    platform: "win32",
+    arch: "x64",
+    manifestUrl: "http://127.0.0.1/core.json",
+    publicKey,
+    allowLocalhost: true,
+    fetchImpl: async () => new Response(JSON.stringify(manifest), { status: 200 })
+  });
+  await manager.initialize();
+  const status = await manager.check();
+  assert.equal(status.status, "host-required");
+  assert.equal(status.updateAvailable, false);
+});

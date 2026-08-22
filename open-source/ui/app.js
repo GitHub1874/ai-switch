@@ -37,6 +37,7 @@
   const updateStateCard = document.querySelector("#update-state-card");
   const updateStateTitle = document.querySelector("#update-state-title");
   const updateStateDetail = document.querySelector("#update-state-detail");
+  const updateSafetyNote = document.querySelector("#update-safety-note");
   const updateProgress = document.querySelector("#update-progress");
   const updateProgressFill = document.querySelector("#update-progress-fill");
   const updateNotes = document.querySelector("#update-notes");
@@ -131,6 +132,7 @@
   let updatePollTimer = null;
   let updateStatusTimer = null;
   let notifiedUpdateVersion = null;
+  let promptedUpdateVersion = null;
   let notifiedUpdateError = null;
   let credentialSwitchCapability = { switchingSupported: true, message: "" };
   let selectedAccountId = null;
@@ -1428,7 +1430,11 @@
     appVersionButton.classList.toggle("has-update", Boolean(status.updateAvailable));
     if (status.status === "available" && latest && notifiedUpdateVersion !== latest) {
       notifiedUpdateVersion = latest;
-      showToast(`发现 AI Switch v${latest}，请到“管理 → 版本信息”更新`);
+      showToast(`发现 AI Switch v${latest}，可以立即更新`);
+    }
+    if (status.status === "available" && latest && promptedUpdateVersion !== latest && !document.querySelector("dialog[open]")) {
+      promptedUpdateVersion = latest;
+      updateDialog.showModal();
     }
     if (status.status === "error" && status.error && notifiedUpdateError !== status.error) {
       notifiedUpdateError = status.error;
@@ -1443,7 +1449,9 @@
       idle: ["准备检查更新", "点击下方按钮，从官方 GitHub Release 检查最新版本。"],
       checking: ["正在检查更新", "正在安全连接官方发布源…"],
       "up-to-date": ["当前已是最新版本", "没有发现需要安装的新版本。"],
-      available: ["发现新版本", `v${latest || "-"} 已可用${status.packageSize ? ` · ${formatUpdateSize(status.packageSize)}` : ""}`],
+      available: ["发现新版本", status.installMode === "manual-package"
+        ? `v${latest || "-"} 已可用；当前系统将打开官方下载页`
+        : `v${latest || "-"} 已可用${status.packageSize ? ` · ${formatUpdateSize(status.packageSize)}` : ""}`],
       downloading: ["正在下载更新", `已完成 ${status.progress?.percent || 0}%`],
       ready: ["更新已准备好", `v${latest || "-"} 已通过签名和完整性校验。`],
       applying: ["正在重启并更新", "窗口将暂时关闭，完成后会自动重新打开。"],
@@ -1458,6 +1466,12 @@
     const notes = Array.isArray(status.notes) ? status.notes.filter(Boolean) : [];
     updateNotes.hidden = !notes.length;
     updateNoteList.replaceChildren(...notes.map((note) => element("li", "", note)));
+
+    const manualPackage = status.installMode === "manual-package";
+    downloadUpdateButton.textContent = manualPackage ? "打开官方下载页" : "下载更新";
+    updateSafetyNote.textContent = manualPackage
+      ? "更新信息来自官方 GitHub Release。未签名的 macOS/Linux 社区包不会绕过系统安全校验或执行静默替换；本地账户、会话和设置不会被覆盖。"
+      : "业务补丁和更新包会验证 Ed25519 数字签名与 SHA-256；失败时保留上一版本。本地账户、会话和设置不会被覆盖。";
 
     checkUpdateButton.hidden = ["available", "downloading", "ready", "applying"].includes(status.status);
     checkUpdateButton.disabled = updateOperation || status.status === "checking";
@@ -1498,11 +1512,15 @@
   async function downloadUpdate() {
     if (updateOperation) return;
     updateOperation = true;
-    renderUpdateStatus({ ...updateStatus, status: "downloading", progress: { percent: 0 } });
-    updatePollTimer = setInterval(() => refreshUpdateStatus().catch(() => {}), 500);
+    const manualPackage = updateStatus?.installMode === "manual-package";
+    if (!manualPackage) {
+      renderUpdateStatus({ ...updateStatus, status: "downloading", progress: { percent: 0 } });
+      updatePollTimer = setInterval(() => refreshUpdateStatus().catch(() => {}), 500);
+    }
     try {
       const payload = await api("/api/update/download", { method: "POST" });
       renderUpdateStatus(payload.update);
+      if (manualPackage) showToast("已打开官方发布页，请下载适合当前系统的安装包");
     } catch (error) {
       await refreshUpdateStatus().catch(() => {});
       showToast(error.message, "error");
@@ -1522,7 +1540,7 @@
       const payload = await api("/api/update/apply", { method: "POST" });
       renderUpdateStatus(payload.update);
       if (isDesktopHost) {
-        window.chrome.webview.postMessage("apply-update");
+        window.chrome.webview.postMessage(payload.update?.hostAction === "restart-app" ? "apply-update" : "apply-update");
       } else {
         showToast("更新已准备好，请退出并重新打开 AI Switch", "success");
       }

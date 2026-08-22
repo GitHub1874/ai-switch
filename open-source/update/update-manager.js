@@ -108,6 +108,7 @@ function validateManifest(manifest, options) {
   if (manifest.schema !== 1) throw new Error("更新清单版本不受支持");
   parseVersion(manifest.version);
   if (manifest.minimumVersion) parseVersion(manifest.minimumVersion);
+  if (manifest.minimumHostVersion) parseVersion(manifest.minimumHostVersion);
   if (!options.allowUnsigned) verifyManifestSignature(manifest, options.publicKey);
   const key = platformPackageKey(options.platform, options.arch);
   const candidate = manifest.packages?.[key];
@@ -121,6 +122,7 @@ function validateManifest(manifest, options) {
   return {
     version: String(manifest.version).replace(/^v/i, ""),
     minimumVersion: manifest.minimumVersion ? String(manifest.minimumVersion).replace(/^v/i, "") : null,
+    minimumHostVersion: manifest.minimumHostVersion ? String(manifest.minimumHostVersion).replace(/^v/i, "") : null,
     mandatory: Boolean(manifest.mandatory),
     rollout,
     publishedAt: manifest.publishedAt || null,
@@ -138,12 +140,17 @@ async function hashFile(target) {
 
 function createUpdateManager(options) {
   const dataRoot = path.resolve(options.dataRoot);
-  const updatesRoot = path.join(dataRoot, "updates");
+  const namespace = String(options.namespace || "").trim();
+  if (namespace && !/^[a-z0-9-]+$/i.test(namespace)) throw new Error("更新命名空间无效");
+  const updatesRoot = namespace
+    ? path.join(dataRoot, "updates", namespace)
+    : path.join(dataRoot, "updates");
   const packagesRoot = path.join(updatesRoot, "packages");
   const statePath = path.join(updatesRoot, "state.json");
   const pendingPath = path.join(updatesRoot, "pending-update.json");
   const installIdPath = path.join(updatesRoot, "install-id");
   const currentVersion = String(options.currentVersion || "0.0.0").replace(/^v/i, "");
+  const hostVersion = String(options.hostVersion || currentVersion).replace(/^v/i, "");
   const platform = options.platform || process.platform;
   const arch = options.arch || process.arch;
   const manifestUrl = String(options.manifestUrl || "").trim();
@@ -151,6 +158,7 @@ function createUpdateManager(options) {
   const fetchImpl = options.fetchImpl || global.fetch;
   const allowLocalhost = Boolean(options.allowLocalhost);
   const allowUnsigned = Boolean(options.allowUnsigned);
+  const updateKind = String(options.updateKind || "application");
   const now = options.now || (() => new Date());
   const operations = new AsyncLock();
   let state = null;
@@ -160,6 +168,7 @@ function createUpdateManager(options) {
       schema: 1,
       configured: Boolean(manifestUrl && (publicKey || allowUnsigned)),
       currentVersion,
+      hostVersion,
       platform,
       arch,
       status: manifestUrl && (publicKey || allowUnsigned) ? "idle" : "disabled",
@@ -184,8 +193,14 @@ function createUpdateManager(options) {
     await fsp.mkdir(packagesRoot, { recursive: true });
     try {
       const saved = JSON.parse(await fsp.readFile(statePath, "utf8"));
-      state = { ...baseState(), ...saved, currentVersion, platform, arch };
+      state = { ...baseState(), ...saved, currentVersion, hostVersion, platform, arch };
       if (!baseState().configured) state = baseState();
+      if (state.candidate && compareVersions(state.candidate.version, currentVersion) <= 0) {
+        state.status = "up-to-date";
+        state.candidate = null;
+        state.progress = null;
+        state.error = null;
+      }
       if (["checking", "downloading", "applying"].includes(state.status)) {
         state.status = state.candidate ? "available" : "idle";
         state.progress = null;
@@ -220,7 +235,9 @@ function createUpdateManager(options) {
     const candidate = state?.candidate;
     return {
       configured: Boolean(state?.configured),
+      updateKind,
       currentVersion,
+      hostVersion,
       platform,
       arch,
       status: state?.status || "disabled",
@@ -262,7 +279,10 @@ function createUpdateManager(options) {
         const candidate = validateManifest(manifest, { publicKey, platform, arch, allowLocalhost, allowUnsigned });
         state.checkedAt = now().toISOString();
         state.latestVersion = candidate.version;
-        if (compareVersions(candidate.version, currentVersion) <= 0 || !(await participates(candidate.version, candidate.rollout))) {
+        if (candidate.minimumHostVersion && compareVersions(hostVersion, candidate.minimumHostVersion) < 0) {
+          state.status = "host-required";
+          state.candidate = null;
+        } else if (compareVersions(candidate.version, currentVersion) <= 0 || !(await participates(candidate.version, candidate.rollout))) {
           state.status = "up-to-date";
           state.candidate = null;
         } else {
