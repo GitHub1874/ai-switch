@@ -124,6 +124,8 @@
   let updateStatus = null;
   let updateOperation = false;
   let updatePollTimer = null;
+  let updateStatusTimer = null;
+  let notifiedUpdateVersion = null;
   let credentialSwitchCapability = { switchingSupported: true, message: "" };
   let selectedAccountId = null;
   let dragState = null;
@@ -1349,6 +1351,10 @@
       : `当前版本 v${appVersion || status.currentVersion || "-"}`;
     updateDot.hidden = !status.updateAvailable;
     appVersionButton.classList.toggle("has-update", Boolean(status.updateAvailable));
+    if (status.status === "available" && latest && notifiedUpdateVersion !== latest) {
+      notifiedUpdateVersion = latest;
+      showToast(`发现 AI Switch v${latest}，请到“管理 → 版本信息”更新`);
+    }
     updateStateCard.classList.toggle("has-error", status.status === "error");
 
     const copy = {
@@ -1384,6 +1390,12 @@
     const payload = await api("/api/update/status");
     renderUpdateStatus(payload.update);
     return payload.update;
+  }
+
+  function startUpdateStatusPolling() {
+    if (updateStatusTimer) return;
+    setTimeout(() => refreshUpdateStatus().catch(() => {}), 18000);
+    updateStatusTimer = setInterval(() => refreshUpdateStatus().catch(() => {}), 60000);
   }
 
   async function checkForUpdate() {
@@ -2176,7 +2188,7 @@
     return;
   }
 
-  loadAppInfo().catch(() => {});
+  loadAppInfo().then(startUpdateStatusPolling).catch(() => {});
   loadAccounts()
     .then(() => {
       if (requestedView === "sessions") switchView("sessions");
