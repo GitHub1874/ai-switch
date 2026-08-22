@@ -1,10 +1,11 @@
 {
   "schema": 1,
-  "version": "1.14.1-preview.1",
+  "version": "1.14.2-preview.1",
   "minimumVersion": "1.13.0",
+  "minimumHostVersion": null,
   "mandatory": false,
   "rollout": 100,
-  "publishedAt": "2026-08-22T10:59:33.135Z",
+  "publishedAt": "2026-08-22T12:12:24.860Z",
   "notes": [
     "Reuse an installed official Codex runtime with verified manual fallback",
     "Windows package reduced by removing the duplicated Codex binary",
@@ -12,10 +13,10 @@
   ],
   "packages": {
     "win32-x64": {
-      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.14.1-preview.1/AI-Switch-Windows-x64-v1.14.1-preview.1.zip",
-      "sha256": "27828e002e2c9dc9ff91c59381c9f7423a35041158b820a98325e845ef9c300a",
-      "size": 36393266
+      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.14.2-preview.1/AI-Switch-Windows-x64-v1.14.2-preview.1.zip",
+      "sha256": "1a6746c3eb16a60a6200f39f72212ee8c00c4bdc10607a850ce14317c5965c00",
+      "size": 36401494
     }
   },
-  "signature": "ykCRSYssJMcb4fHrkYDhWoo+btihsFJjN18kpETIgE1LYWP3TNN269u6mufBBxKAyQ8EVHZJHGF2gvlhJKuzCQ=="
+  "signature": "zrwhhXms+Xxt9Kfc+cNrwa4WITAcrJ5arZz7to7pxq2a8O6fQPbtjJ9BxSUdUDu1igsGsrwyb3/aEpBlF7K6Ag=="
 }
