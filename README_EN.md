@@ -56,3 +56,5 @@ The currently published source is licensed under the [PolyForm Noncommercial Lic
 Commercial licensing: **QQ 380456551**. See [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md).
 
 Because commercial use is restricted, this project is source-available rather than OSI open source.
+
+The public repository and release assets follow the [Public Release IP Policy](PUBLIC_RELEASE_IP_POLICY.md). Third-party component, provider-icon, and trademark notices are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
