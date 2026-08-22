@@ -56,3 +56,5 @@ macOS 预览包尚未使用 Apple Developer ID 签名和 notarization，只用�
 商业授权联系作者：**QQ 380456551**。详见 [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)。
 
 由于限制商业使用，本项目属于 source-available（源码可见），不是 OSI 定义的开源软件。
+
+公开仓库和发行资产遵循[公开发布知识产权约束](PUBLIC_RELEASE_IP_POLICY.md)。第三方组件、服务商图标来源及商标说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
