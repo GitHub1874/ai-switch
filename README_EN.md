@@ -30,8 +30,10 @@ Authorization, credential storage, and account-switching internals remain privat
 
 Download only from this repository's **Releases** page. AI Switch has no developer backend. Installation and update files are hosted directly on GitHub Releases.
 
+The app checks for stable updates but never downloads or silently installs them without user action. Users choose **Download update** and then **Restart and update**. Pushing code, creating a tag, or uploading ordinary files does not publish a client update. See the [Update Policy](UPDATE_POLICY.md) for the complete rules.
+
 - [Latest downloads / Releases](https://github.com/GitHub1874/ai-switch/releases)
-- [v1.13.0-preview.1 for macOS and Linux](https://github.com/GitHub1874/ai-switch/releases/tag/v1.13.0-preview.1)
+- [v1.13.1-preview.1 for Windows, macOS, and Linux](https://github.com/GitHub1874/ai-switch/releases/tag/v1.13.1-preview.1)
 
 The current preview provides:
 
@@ -40,6 +42,8 @@ The current preview provides:
 - Linux integration for the distributions currently supported by the official OpenAI desktop app: Ubuntu 24.04/26.04, Debian 13, and Fedora 43/44. The official Codex/ChatGPT desktop app must still be installed separately.
 
 The macOS preview is not yet signed with an Apple Developer ID or notarized. It is intended for testing, and the first launch requires the steps documented in the Release notes. A stable build will follow after certificates, notarization, and real-device validation are complete.
+
+The currently published build is still a Pre-release. Stable clients do not treat it as a normal update by default. A stable Release will follow only after signing and real upgrade validation are complete on all supported platforms.
 
 ## Privacy
 
