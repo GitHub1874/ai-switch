@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "version": "1.14.2-preview.1",
+  "minimumVersion": "1.14.2",
+  "minimumHostVersion": "1.14.2-preview.1",
+  "mandatory": false,
+  "rollout": 100,
+  "publishedAt": "2026-08-22T12:12:24.947Z",
+  "notes": [
+    "Cross-platform signed business-layer update",
+    "Automatic update prompt with safe rollback",
+    "Unsigned macOS builds no longer invoke ShipIt replacement"
+  ],
+  "packages": {
+    "win32-x64": {
+      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.14.2-preview.1/AI-Switch-Core-v1.14.2-preview.1.tar.gz",
+      "sha256": "ae6c373d36cf87582ed5e11c70f4af98ca6880b95a3681f93aedbb053b2c02b0",
+      "size": 269549
+    },
+    "linux-x64": {
+      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.14.2-preview.1/AI-Switch-Core-v1.14.2-preview.1.tar.gz",
+      "sha256": "ae6c373d36cf87582ed5e11c70f4af98ca6880b95a3681f93aedbb053b2c02b0",
+      "size": 269549
+    },
+    "darwin-x64": {
+      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.14.2-preview.1/AI-Switch-Core-v1.14.2-preview.1.tar.gz",
+      "sha256": "ae6c373d36cf87582ed5e11c70f4af98ca6880b95a3681f93aedbb053b2c02b0",
+      "size": 269549
+    },
+    "darwin-arm64": {
+      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.14.2-preview.1/AI-Switch-Core-v1.14.2-preview.1.tar.gz",
+      "sha256": "ae6c373d36cf87582ed5e11c70f4af98ca6880b95a3681f93aedbb053b2c02b0",
+      "size": 269549
+    },
+    "linux-arm64": {
+      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.14.2-preview.1/AI-Switch-Core-v1.14.2-preview.1.tar.gz",
+      "sha256": "ae6c373d36cf87582ed5e11c70f4af98ca6880b95a3681f93aedbb053b2c02b0",
+      "size": 269549
+    }
+  },
+  "signature": "1pXR8PhGOqEpSoh0Bgt+UdudAJ/YIkEsviGxAF8sFUMaVTHxNT9zuc+W9YD1eeFOshVgJ+CiS4CS3UcKlA8+Aw=="
+}
