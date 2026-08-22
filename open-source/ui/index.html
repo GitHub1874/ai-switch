@@ -111,6 +111,7 @@
           <div class="local-manager">
             <aside class="local-sidebar" aria-label="本机管理分类">
             <button class="local-tab active" type="button" data-local-tab="authorization">授权中心</button>
+            <button class="local-tab" type="button" data-local-tab="runtime">运行环境</button>
             <button class="local-tab" type="button" data-local-tab="data">备份恢复</button>
             <button class="local-tab" type="button" data-local-tab="projects">项目方案</button>
             <button class="local-tab" type="button" data-local-tab="extensions">本地扩展</button>
@@ -120,6 +121,21 @@
             <section class="local-panel" data-local-panel="authorization">
               <div class="local-panel-heading"><div><h2>授权中心</h2><p>集中管理官方授权；正常状态保持安静，仅在需要操作时提示。</p></div><button id="refresh-auth-center" class="secondary-button" type="button">刷新状态</button></div>
               <div id="auth-center-list" class="management-list"></div>
+            </section>
+            <section class="local-panel" data-local-panel="runtime" hidden>
+              <div class="local-panel-heading"><div><h2>Codex 运行环境</h2><p>优先使用已安装的官方 Codex；找不到时可以手动选择应用位置。</p></div></div>
+              <div class="runtime-card">
+                <div class="runtime-status-copy">
+                  <strong id="codex-runtime-title">正在检测…</strong>
+                  <span id="codex-runtime-detail">检查本机官方安装</span>
+                  <code id="codex-runtime-path" hidden></code>
+                </div>
+                <div class="runtime-actions">
+                  <button id="detect-codex-runtime" class="secondary-button" type="button">自动检测</button>
+                  <button id="select-codex-runtime" class="primary-button" type="button">选择位置</button>
+                </div>
+              </div>
+              <p class="runtime-help">可选择 Codex/ChatGPT 应用、应用目录或 codex 运行文件；保存前会执行版本校验和 App Server 握手。</p>
             </section>
             <section class="local-panel" data-local-panel="data" hidden>
               <div class="local-panel-heading"><div><h2>备份与恢复</h2><p>备份保存在本机，包含敏感凭证，请勿发送给他人。</p></div><button id="create-backup" class="primary-button" type="button">创建备份</button></div>
