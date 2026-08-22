@@ -884,7 +884,7 @@
       );
       if (resetCount > 0) {
         resetTag.type = "button";
-        resetTag.title = "使用 1 张重置卡恢复 5 小时额度";
+        resetTag.title = "使用 1 张重置卡恢复每周额度";
         resetTag.disabled = busy;
         resetTag.addEventListener("click", (event) => {
           event.stopPropagation();
@@ -1601,7 +1601,7 @@
     confirmResetButton.disabled = true;
     cancelResetButton.disabled = true;
     confirmResetButton.textContent = "正在重置…";
-    setBusy(true, `正在重置 ${label} 的 5 小时额度…`);
+    setBusy(true, `正在重置 ${label} 的每周额度…`);
     try {
       const payload = await api(`/api/accounts/${account.id}/reset-usage`, { method: "POST" });
       const index = accounts.findIndex((item) => item.id === account.id);
@@ -1609,8 +1609,8 @@
       pendingResetAccount = null;
       resetDialog.close();
       render();
-      setStatus(payload.warning || `${label} 的 5 小时额度已重置。`, "success");
-      showToast(payload.warning || "5 小时额度已重置");
+      setStatus(payload.warning || `${label} 的每周额度已重置。`, "success");
+      showToast(payload.warning || "每周额度已重置");
     } catch (error) {
       await loadAccounts().catch(() => {});
       setStatus(error.message, "error");

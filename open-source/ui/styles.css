@@ -493,7 +493,6 @@ button { color: inherit; }
 .reset-dialog-icon svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .reset-credit-summary { display: flex; align-items: center; justify-content: space-between; margin-top: 18px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: #fafafa; color: #52525b; font-size: 13px; }
 .reset-credit-summary strong { color: var(--foreground); font-size: 18px; font-weight: 650; }
-.reset-dialog-note { margin: 10px 0 0; color: var(--muted-foreground); font-size: 12px; line-height: 18px; }
 .reset-dialog-actions { display: grid; grid-template-columns: 1fr 1.35fr; gap: 8px; margin-top: 18px; }
 
 .toast { position: fixed; right: 20px; bottom: 20px; z-index: 30; max-width: 380px; padding: 11px 14px 11px 17px; border: 1px solid rgba(15, 23, 42, .1); border-radius: 10px; background: rgba(255, 255, 255, .97); color: var(--foreground); box-shadow: 0 12px 32px rgba(15, 23, 42, .16); font-size: 12px; font-weight: 500; line-height: 18px; opacity: 0; transform: translateY(8px); pointer-events: none; transition: .18s ease; backdrop-filter: blur(12px); }
