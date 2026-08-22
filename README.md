@@ -13,7 +13,7 @@ AI Switch 是一款纯本机桌面工具，用于手动查看本人多个 Codex 
 - 桌面界面层（HTML、CSS、前端 JavaScript）
 - 安全更新协议及校验实现
 - 产品文档、更新记录和问题反馈模板
-- Windows 正式发布包，以及 macOS / Linux 预览包和校验文件
+- Windows / macOS / Linux 社区预览包和校验文件
 
 授权、凭证存储、账户切换等核心实现暂不公开，后续计划逐步开放。完整源码在私有仓库中由作者与合伙人通过 Git 分支、Pull Request 和代码审查协同开发。
 
@@ -30,7 +30,7 @@ AI Switch 是一款纯本机桌面工具，用于手动查看本人多个 Codex 
 
 请只从本仓库的 **Releases** 下载。AI Switch 没有开发者后台，安装与更新文件直接托管在 GitHub Releases。
 
-软件只自动检查正式新版，不会自动下载或静默安装；用户点击“下载更新”和“重启并更新”后才完成升级。仅推送代码、创建标签或上传普通附件不会成为客户端更新，完整规则见 [更新策略](UPDATE_POLICY.md)。
+软件启动约 15 秒后自动检查社区新版，此后每 6 小时检查一次，也可手动检查；不会自动下载或静默安装。用户点击“下载更新”和“重启并更新”后才完成升级。仅推送代码、创建标签或上传普通附件不会成为客户端更新，完整规则见 [更新策略](UPDATE_POLICY.md)。
 
 - [下载最新版 / Releases](https://github.com/GitHub1874/ai-switch/releases)
 - [下载 v1.14.1-preview.1（Windows / macOS / Linux 预览版）](https://github.com/GitHub1874/ai-switch/releases/tag/v1.14.1-preview.1)
@@ -41,9 +41,9 @@ AI Switch 是一款纯本机桌面工具，用于手动查看本人多个 Codex 
 - Linux x64 / ARM64 AppImage，以及 amd64 / arm64 deb。
 - Linux 适配 OpenAI 官方桌面端当前支持的 Ubuntu 24.04/26.04、Debian 13、Fedora 43/44；安装 AI Switch 前仍需单独安装官方 Codex/ChatGPT 桌面应用。
 
-macOS 预览包尚未使用 Apple Developer ID 签名和 notarization，只用于测试，首次打开需按 Release 说明操作。正式稳定版会在证书、公证及真机回归完成后发布。
+本项目长期只提供 GitHub Pre-release 社区版，不提供或宣传无生产签名的“稳定版”。所有新客户端固定接收社区 preview 更新；历史上仍跟随 stable/latest 通道的旧安装需手动安装一次社区版后才能持续自动检查更新。
 
-当前公开版本仍是 Pre-release。稳定版客户端默认不会将它作为正式更新；三平台正式签名与旧版升级验收完成后才会发布稳定 Release。
+macOS 社区包未使用 Apple Developer ID 签名和 notarization，首次打开或升级可能需要按 Release 说明下载 DMG、手动覆盖并确认系统提示。Windows 可能出现 SmartScreen 提示。
 
 ## 隐私
 
