@@ -33,7 +33,7 @@ AI Switch 是一款纯本机桌面工具，用于手动查看本人多个 Codex 
 软件启动约 15 秒后自动检查社区新版，此后每 6 小时检查一次，也可手动检查；不会自动下载或静默安装。用户点击“下载更新”和“重启并更新”后才完成升级。仅推送代码、创建标签或上传普通附件不会成为客户端更新，完整规则见 [更新策略](UPDATE_POLICY.md)。
 
 - [下载最新版 / Releases](https://github.com/GitHub1874/ai-switch/releases)
-- [下载 v1.14.1-preview.1（Windows / macOS / Linux 预览版）](https://github.com/GitHub1874/ai-switch/releases/tag/v1.14.1-preview.1)
+- [下载 v1.15.0-preview.1（Windows / macOS / Linux 社区预览版）](https://github.com/GitHub1874/ai-switch/releases/tag/v1.15.0-preview.1)
 
 当前预览版提供：
 
