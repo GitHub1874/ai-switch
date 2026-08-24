@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "version": "1.15.0-preview.1",
+  "version": "1.15.1-preview.1",
   "minimumVersion": "1.13.0",
   "minimumHostVersion": null,
   "mandatory": false,
   "rollout": 100,
-  "publishedAt": "2026-08-24T01:36:18.973Z",
+  "publishedAt": "2026-08-24T02:04:22.570Z",
   "notes": [
     "Native auth.json import and export dialogs with local-only credential handling",
     "Reliable streaming termination and exactly-once launch resume after reauthorization",
@@ -13,10 +13,10 @@
   ],
   "packages": {
     "win32-x64": {
-      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.15.0-preview.1/AI-Switch-Windows-x64-v1.15.0-preview.1.zip",
-      "sha256": "8cf99094c88b2b18a66660b7e69e4a0f37bafe3a21ad3d11ed04e0efd5ba5732",
-      "size": 36434841
+      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.15.1-preview.1/AI-Switch-Windows-x64-v1.15.1-preview.1.zip",
+      "sha256": "c658813c3481796bacaa8fcc13958cfa22076ad12ceabc53e43f47ad3e00b769",
+      "size": 36434839
     }
   },
-  "signature": "GcRP9EUP9JQya47xN9LpNHfwrMXTPE41YVSGZ62VADhrOGJg2PH11utoZkWT7nJrigLFDb1sJ43Iszab6s6ACQ=="
+  "signature": "4n5DzsUf8GIwF4o/83r5pQH8JPYfajjvq4eQsI3e3SoqTzFgo0ROvZU8Z870oFpbCS2TWL+cl1NZPqR5YI6EAw=="
 }
