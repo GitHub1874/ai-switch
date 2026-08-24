@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "version": "1.15.0-preview.1",
+  "version": "1.15.1-preview.1",
   "minimumVersion": "1.14.2",
   "minimumHostVersion": "1.15.0-preview.1",
   "mandatory": false,
   "rollout": 100,
-  "publishedAt": "2026-08-24T01:36:19.049Z",
+  "publishedAt": "2026-08-24T02:04:22.660Z",
   "notes": [
     "Secure official auth.json migration with remote credential verification",
     "Reliable proxy stream shutdown and isolated concurrent request state",
@@ -13,30 +13,30 @@
   ],
   "packages": {
     "darwin-arm64": {
-      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.15.0-preview.1/AI-Switch-Core-v1.15.0-preview.1.tar.gz",
-      "sha256": "912e23cd772809fb487ab740b185535cf4d3887adaaad5a0c704d1c4d402842b",
-      "size": 287905
-    },
-    "linux-arm64": {
-      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.15.0-preview.1/AI-Switch-Core-v1.15.0-preview.1.tar.gz",
-      "sha256": "912e23cd772809fb487ab740b185535cf4d3887adaaad5a0c704d1c4d402842b",
-      "size": 287905
-    },
-    "darwin-x64": {
-      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.15.0-preview.1/AI-Switch-Core-v1.15.0-preview.1.tar.gz",
-      "sha256": "912e23cd772809fb487ab740b185535cf4d3887adaaad5a0c704d1c4d402842b",
-      "size": 287905
-    },
-    "linux-x64": {
-      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.15.0-preview.1/AI-Switch-Core-v1.15.0-preview.1.tar.gz",
-      "sha256": "912e23cd772809fb487ab740b185535cf4d3887adaaad5a0c704d1c4d402842b",
+      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.15.1-preview.1/AI-Switch-Core-v1.15.1-preview.1.tar.gz",
+      "sha256": "ff24e630ac2aa5564631b9335cbb282890fb318de807e0fb17942653af791dcb",
       "size": 287905
     },
     "win32-x64": {
-      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.15.0-preview.1/AI-Switch-Core-v1.15.0-preview.1.tar.gz",
-      "sha256": "912e23cd772809fb487ab740b185535cf4d3887adaaad5a0c704d1c4d402842b",
+      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.15.1-preview.1/AI-Switch-Core-v1.15.1-preview.1.tar.gz",
+      "sha256": "ff24e630ac2aa5564631b9335cbb282890fb318de807e0fb17942653af791dcb",
+      "size": 287905
+    },
+    "darwin-x64": {
+      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.15.1-preview.1/AI-Switch-Core-v1.15.1-preview.1.tar.gz",
+      "sha256": "ff24e630ac2aa5564631b9335cbb282890fb318de807e0fb17942653af791dcb",
+      "size": 287905
+    },
+    "linux-x64": {
+      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.15.1-preview.1/AI-Switch-Core-v1.15.1-preview.1.tar.gz",
+      "sha256": "ff24e630ac2aa5564631b9335cbb282890fb318de807e0fb17942653af791dcb",
+      "size": 287905
+    },
+    "linux-arm64": {
+      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.15.1-preview.1/AI-Switch-Core-v1.15.1-preview.1.tar.gz",
+      "sha256": "ff24e630ac2aa5564631b9335cbb282890fb318de807e0fb17942653af791dcb",
       "size": 287905
     }
   },
-  "signature": "xjbRTj+k6cTcsU1SsShiH3RmmpIjGZ0txfUDHv5pnGw9WA/k1EQ2kPrHkL2U3aaKRnWVeKymh90SYWjNpSxWCA=="
+  "signature": "X8KzrtudoNJ/D46aDnWoaKOHDS/1iQpbxqAAwLV0UgAFBZx8yGjFjR785nqhgAY5/KsgX+35ekYX7AZj4HL6CQ=="
 }
