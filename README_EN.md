@@ -33,7 +33,7 @@ Download only from this repository's **Releases** page. AI Switch has no develop
 The app automatically checks for community updates about 15 seconds after startup and every six hours thereafter; users can also check manually. It never downloads or silently installs an update without user action. Users choose **Download update** and then **Restart and update**. Pushing code, creating a tag, or uploading ordinary files does not publish a client update. See the [Update Policy](UPDATE_POLICY.md) for the complete rules.
 
 - [Latest downloads / Releases](https://github.com/GitHub1874/ai-switch/releases)
-- [v1.15.0-preview.1 community preview for Windows, macOS, and Linux](https://github.com/GitHub1874/ai-switch/releases/tag/v1.15.0-preview.1)
+- [v1.15.1-preview.1 community preview for Windows, macOS, and Linux](https://github.com/GitHub1874/ai-switch/releases/tag/v1.15.1-preview.1)
 
 The current preview provides:
 
