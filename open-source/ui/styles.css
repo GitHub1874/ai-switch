@@ -302,6 +302,8 @@ button { color: inherit; }
 .local-panel-heading { display: flex; min-height: 52px; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
 .local-panel-heading h2 { margin: 0; color: #18181b; font-size: 18px; font-weight: 650; letter-spacing: -.2px; }
 .local-panel-heading p { margin: 5px 0 0; color: var(--muted-foreground); font-size: 12px; }
+.local-panel-actions { display: flex; flex: none; gap: 8px; }
+.auth-transfer-host-note { margin: -10px 0 14px; padding: 9px 11px; border: 1px solid #e4e4e7; border-radius: 8px; background: #fafafa; color: var(--muted-foreground); font-size: 11px; line-height: 1.55; }
 .management-list { overflow: hidden; border: 1px solid var(--border); border-radius: 11px; background: #fff; }
 .management-empty { padding: 42px 18px; color: var(--muted-foreground); text-align: center; font-size: 13px; }
 .management-row { display: grid; min-height: 64px; grid-template-columns: minmax(180px, 1fr) minmax(140px, auto) auto; align-items: center; gap: 16px; padding: 10px 14px; }
@@ -314,7 +316,7 @@ button { color: inherit; }
 .management-state::before { width: 7px; height: 7px; border-radius: 50%; background: currentColor; content: ""; }
 .management-state.warning { color: #d97706; }
 .management-state.error { color: #dc2626; }
-.management-actions { display: flex; align-items: center; gap: 7px; }
+.management-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 7px; }
 .management-actions button { min-height: 31px; padding: 0 10px; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: #3f3f46; cursor: pointer; font-size: 12px; }
 .management-actions button:hover { border-color: #bfdbfe; background: #eff6ff; color: #0369a1; }
 .management-actions button.danger:hover { border-color: #fecaca; background: #fff1f2; color: #dc2626; }
@@ -505,6 +507,17 @@ button { color: inherit; }
 .reset-credit-summary { display: flex; align-items: center; justify-content: space-between; margin-top: 18px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: #fafafa; color: #52525b; font-size: 13px; }
 .reset-credit-summary strong { color: var(--foreground); font-size: 18px; font-weight: 650; }
 .reset-dialog-actions { display: grid; grid-template-columns: 1fr 1.35fr; gap: 8px; margin-top: 18px; }
+.auth-transfer-dialog { width: min(470px, calc(100% - 32px)); }
+.auth-transfer-risk-icon { background: #fff1f2; color: #dc2626; }
+.auth-transfer-warning { margin-top: 16px; padding: 12px 13px; border: 1px solid #fecaca; border-radius: 9px; background: #fff7f7; color: #7f1d1d; }
+.auth-transfer-warning strong { display: block; font-size: 13px; }
+.auth-transfer-warning p { margin: 5px 0 0; font-size: 11px; line-height: 1.55; }
+.auth-transfer-dialog .form-field { margin-top: 14px; }
+.auth-transfer-dialog .form-field > span { display: block; margin-bottom: 6px; color: #52525b; font-size: 12px; }
+.auth-transfer-dialog select { width: 100%; height: 38px; padding: 0 10px; border: 1px solid var(--border); border-radius: 7px; outline: none; background: #fff; color: var(--foreground); }
+.auth-transfer-acknowledgement { display: grid !important; grid-template-columns: 18px minmax(0, 1fr); align-items: start; gap: 9px; margin: 14px 0 0 !important; color: #3f3f46; font-size: 12px !important; font-weight: 500; line-height: 1.5; }
+.dialog .auth-transfer-acknowledgement input { width: 16px; height: 16px; margin: 1px 0 0; padding: 0; accent-color: #dc2626; }
+.auth-transfer-dialog .reset-dialog-actions button { min-height: 38px; }
 
 .toast { position: fixed; right: 20px; bottom: 20px; z-index: 30; max-width: 380px; padding: 11px 14px 11px 17px; border: 1px solid rgba(15, 23, 42, .1); border-radius: 10px; background: rgba(255, 255, 255, .97); color: var(--foreground); box-shadow: 0 12px 32px rgba(15, 23, 42, .16); font-size: 12px; font-weight: 500; line-height: 18px; opacity: 0; transform: translateY(8px); pointer-events: none; transition: .18s ease; backdrop-filter: blur(12px); }
 .toast::before { position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--primary); content: ""; }
