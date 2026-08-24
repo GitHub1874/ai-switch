@@ -119,7 +119,14 @@
             </aside>
             <div class="local-workspace">
             <section class="local-panel" data-local-panel="authorization">
-              <div class="local-panel-heading"><div><h2>授权中心</h2><p>集中管理官方授权；正常状态保持安静，仅在需要操作时提示。</p></div><button id="refresh-auth-center" class="secondary-button" type="button">刷新状态</button></div>
+              <div class="local-panel-heading">
+                <div><h2>授权中心</h2><p>集中管理官方授权与本人设备迁移；完整凭证始终留在本机。</p></div>
+                <div class="local-panel-actions">
+                  <button id="import-auth-file" class="secondary-button" type="button" hidden>导入 auth.json</button>
+                  <button id="refresh-auth-center" class="secondary-button" type="button">刷新状态</button>
+                </div>
+              </div>
+              <p id="auth-transfer-host-note" class="auth-transfer-host-note">auth.json 导入导出只在支持系统原生文件对话框的桌面版本中开放。</p>
               <div id="auth-center-list" class="management-list"></div>
             </section>
             <section class="local-panel" data-local-panel="runtime" hidden>
@@ -370,6 +377,35 @@
       </div>
     </dialog>
 
+    <dialog id="auth-transfer-dialog" class="dialog auth-transfer-dialog">
+      <div class="reset-dialog-heading">
+        <span class="reset-dialog-icon auth-transfer-risk-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 3 2.8 20h18.4z"/><path d="M12 9v5M12 17h.01"/></svg>
+        </span>
+        <div>
+          <h2 id="auth-transfer-title">确认处理完整凭证？</h2>
+          <p id="auth-transfer-summary"></p>
+        </div>
+      </div>
+      <div class="auth-transfer-warning">
+        <strong>这是完整高敏感 auth.json</strong>
+        <p>文件可能包含 access/refresh/id token、API Key 或 Agent Identity 私钥，可在另一台设备形成登录态。</p>
+        <p>仅用于账号本人设备迁移或本地备份。不要通过聊天、网盘、邮件或代码仓库分享给任何人。</p>
+      </div>
+      <label id="auth-transfer-mode-field" class="form-field" hidden>
+        <span>单独导出的凭证类型</span>
+        <select id="auth-transfer-mode"></select>
+      </label>
+      <label class="auth-transfer-acknowledgement">
+        <input id="auth-transfer-acknowledge" type="checkbox">
+        <span>我确认这是本人账号，并只在本人控制的设备或离线备份中使用</span>
+      </label>
+      <div class="reset-dialog-actions">
+        <button id="cancel-auth-transfer" class="secondary-button" type="button">取消</button>
+        <button id="confirm-auth-transfer" class="danger" type="button" disabled>继续</button>
+      </div>
+    </dialog>
+
     <div id="batch-progress" class="batch-progress" role="status" aria-live="polite" hidden>
       <div class="batch-progress-heading">
         <span class="batch-progress-spinner" aria-hidden="true"></span>
@@ -380,6 +416,7 @@
       <div class="batch-progress-track" aria-hidden="true"><span id="batch-progress-fill"></span></div>
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="/launch-reauth.js"></script>
     <script src="/app.js"></script>
   </body>
 </html>

@@ -104,6 +104,16 @@
   const localPanels = [...document.querySelectorAll(".local-panel")];
   const authCenterList = document.querySelector("#auth-center-list");
   const refreshAuthCenterButton = document.querySelector("#refresh-auth-center");
+  const importAuthFileButton = document.querySelector("#import-auth-file");
+  const authTransferHostNote = document.querySelector("#auth-transfer-host-note");
+  const authTransferDialog = document.querySelector("#auth-transfer-dialog");
+  const authTransferTitle = document.querySelector("#auth-transfer-title");
+  const authTransferSummary = document.querySelector("#auth-transfer-summary");
+  const authTransferModeField = document.querySelector("#auth-transfer-mode-field");
+  const authTransferMode = document.querySelector("#auth-transfer-mode");
+  const authTransferAcknowledge = document.querySelector("#auth-transfer-acknowledge");
+  const cancelAuthTransferButton = document.querySelector("#cancel-auth-transfer");
+  const confirmAuthTransferButton = document.querySelector("#confirm-auth-transfer");
   const createBackupButton = document.querySelector("#create-backup");
   const backupList = document.querySelector("#backup-list");
   const projectForm = document.querySelector("#project-form");
@@ -125,6 +135,7 @@
   let busy = false;
   let activeLoginId = null;
   let authPopup = null;
+  const launchReauthorization = window.AiSwitchLaunchReauth.createFlow();
   let activePlanFilter = "all";
   let appVersion = "";
   let updateStatus = null;
@@ -153,6 +164,9 @@
   let localProjects = [];
   let localExtensions = [];
   let codexRuntime = null;
+  let authFileTransferAvailable = false;
+  let pendingAuthTransferConfirmation = null;
+  let pendingAuthFileRequest = null;
 
   const isDesktopHost = Boolean(window.chrome?.webview);
   const apiProviderPresets = {
@@ -562,6 +576,7 @@
 
   function planFilterKey(planType, account = null) {
     if (account?.kind === "api") return "api";
+    if (account?.kind === "official" && account.auth?.mode === "apikey") return "api";
     const key = planKey(planType);
     return ["free", "go", "plus", "pro"].includes(key) ? key : "other";
   }
@@ -808,6 +823,7 @@
   function createAccountCard(account) {
     const snapshot = account.lastSnapshot;
     const isApi = account.kind === "api";
+    const isOfficial = account.kind === "official";
     const card = element(
       "article",
       `account-card${selectedAccountId === account.id ? " selected" : ""}${account.lastError ? " has-error" : ""}`
@@ -826,12 +842,13 @@
     const identity = element("div", "account-identity");
     const accountLabel = isApi
       ? apiProviderName(account.api?.provider)
-      : (snapshot?.email || "Codex 账户");
+      : (snapshot?.email || account.label || "Codex 账户");
     const accountTitle = element("h3", "account-title", compactEmail(accountLabel));
     accountTitle.title = accountLabel;
     identity.append(accountTitle);
     const tags = element("div", "identity-tags");
-    const plan = element("span", "plan-pill", isApi ? "API" : planText(snapshot?.planType));
+    const officialPlan = account.auth?.mode === "apikey" ? "API Key" : "Agent Identity";
+    const plan = element("span", "plan-pill", isApi ? "API" : isOfficial ? officialPlan : planText(snapshot?.planType));
     tags.append(plan);
     if (isApi) {
       const metrics = createApiMetrics(account.api?.metrics);
@@ -856,7 +873,7 @@
       account.api.metrics.available === false && !account.api.metrics.message;
     const showStatus = isApi
       ? account.status !== "ready" && !apiBalanceInsufficient
-      : account.requiresReauth || account.status === "authorizing";
+      : isOfficial ? account.status !== "ready" : account.requiresReauth || account.status === "authorizing";
     if (showStatus) {
       const effectiveStatus = account.requiresReauth ? "error" : (account.status || "error");
       const status = element(
@@ -872,7 +889,7 @@
       );
       tags.append(status);
     }
-    if (!isApi && snapshot && planFilterKey(snapshot.planType) !== "free") {
+    if (!isApi && !isOfficial && snapshot && planFilterKey(snapshot.planType) !== "free") {
       const validity = formatSubscriptionValidity(snapshot.subscriptionActiveUntil);
       const validityPill = element(
         "span",
@@ -886,7 +903,7 @@
         : "官方登录凭证未提供订阅到期时间";
       tags.append(validityPill);
     }
-    if (!isApi && snapshot?.resetCreditsAvailable != null) {
+    if (!isApi && !isOfficial && snapshot?.resetCreditsAvailable != null) {
       const resetCount = Number(snapshot.resetCreditsAvailable) || 0;
       const resetTag = element(
         resetCount > 0 ? "button" : "span",
@@ -959,6 +976,15 @@
       }
       apiSummary.append(modelChooser, modelLine);
       body.append(apiSummary);
+    } else if (isOfficial) {
+      body.classList.add("single-limit");
+      body.append(element(
+        "p",
+        "no-data",
+        account.auth?.mode === "apikey"
+          ? "OpenAI 官方 API Key 凭证；不包含 ChatGPT 会员额度。"
+          : "Agent Identity 凭证；私钥仅保存在本机，不提供会员额度查询。"
+      ));
     } else if (snapshot?.limits?.length) {
       if (snapshot.limits.length === 1) body.classList.add("single-limit");
       snapshot.limits.forEach((limit, index) => {
@@ -1017,7 +1043,8 @@
     deleteButton.append(svgIcon("trash"));
     deleteButton.disabled = busy;
     deleteButton.addEventListener("click", () => removeAccount(account));
-    buttons.append(queryButton, deleteButton, launchButton);
+    if (!isOfficial) buttons.append(queryButton);
+    buttons.append(deleteButton, launchButton);
     footer.append(buttons);
     card.append(dragHandle, top, body, footer);
     return card;
@@ -1158,34 +1185,62 @@
 
   function renderAuthCenter() {
     authCenterList.replaceChildren();
-    const oauthAccounts = accounts.filter((account) => account.kind === "oauth");
-    if (!oauthAccounts.length) {
-      authCenterList.append(element("div", "management-empty", "还没有官方授权账户"));
+    importAuthFileButton.hidden = !authFileTransferAvailable;
+    authTransferHostNote.hidden = authFileTransferAvailable;
+    if (!accounts.length) {
+      authCenterList.append(element("div", "management-empty", "还没有本机账户凭证"));
       return;
     }
-    for (const account of oauthAccounts) {
-      const email = account.lastSnapshot?.email || "等待识别账户";
+    for (const account of accounts) {
+      const isOAuth = account.kind === "oauth";
+      const isOfficial = account.kind === "official";
+      const email = account.lastSnapshot?.email || account.api?.name || account.label || "等待识别账户";
       const abnormal = account.requiresReauth || account.status === "error";
       const pending = account.status === "authorizing";
-      const stateText = pending ? "授权进行中" : abnormal ? (account.errorCode === "AUTH_REVOKED" ? "需要重新授权" : "暂时无法验证") : "可用";
+      const stateText = pending ? "授权进行中" : abnormal
+        ? (account.errorCode === "AUTH_REVOKED" ? "需要重新授权" : "暂时无法验证")
+        : isOfficial ? "本机官方凭证" : account.kind === "api" ? "本机 API 凭证" : "可用";
+      const modeText = isOAuth
+        ? "ChatGPT OAuth"
+        : isOfficial
+          ? (account.auth?.mode === "apikey" ? "OpenAI API Key" : "Agent Identity")
+          : `${apiProviderName(account.api?.provider)} API`;
+      const credentialText = account.auth?.credentialUpdatedAt
+        ? `更新于 ${formatCompactDate(Date.parse(account.auth.credentialUpdatedAt))}`
+        : "仅保存在本机";
       const { row, actions } = managementRow(
         email,
-        `官方 App Server · 凭证版本 ${account.auth?.generation || 0} · ${account.auth?.credentialUpdatedAt ? `更新于 ${formatCompactDate(Date.parse(account.auth.credentialUpdatedAt))}` : "尚未刷新"}`,
+        `${modeText} · ${credentialText}`,
         stateText,
         abnormal ? "error" : pending ? "warning" : ""
       );
-      const queryButton = element("button", "", "核对");
-      queryButton.type = "button";
-      queryButton.disabled = busy || pending;
-      queryButton.addEventListener("click", async () => {
-        await queryOne(account.id, email);
-        renderAuthCenter();
-      });
-      const reauthButton = element("button", abnormal ? "danger" : "", "重新授权");
-      reauthButton.type = "button";
-      reauthButton.disabled = busy || pending;
-      reauthButton.addEventListener("click", () => beginAuthorization(account.id));
-      actions.append(queryButton, reauthButton);
+      if (isOAuth) {
+        const queryButton = element("button", "", "核对");
+        queryButton.type = "button";
+        queryButton.disabled = busy || pending;
+        queryButton.addEventListener("click", async () => {
+          await queryOne(account.id, email);
+          renderAuthCenter();
+        });
+        const reauthButton = element("button", abnormal ? "danger" : "", "重新授权");
+        reauthButton.type = "button";
+        reauthButton.disabled = busy || pending;
+        reauthButton.addEventListener("click", () => beginAuthorization(account.id));
+        actions.append(queryButton, reauthButton);
+      }
+      const exportButton = element("button", "", "导出 auth.json");
+      exportButton.type = "button";
+      const unsupportedApi = account.kind === "api" && !(
+        account.api?.provider === "openai" && /^https:\/\/api\.openai\.com\/v1\/?$/i.test(account.api?.baseUrl || "")
+      );
+      exportButton.disabled = busy || pending || !authFileTransferAvailable || unsupportedApi;
+      exportButton.title = !authFileTransferAvailable
+        ? "需要支持系统原生文件对话框的新桌面宿主"
+        : unsupportedApi
+          ? "自定义 API 还依赖 config.toml，不能只导出 auth.json"
+          : "单独导出该账户的官方完整凭证";
+      exportButton.addEventListener("click", () => exportAccountAuthFile(account));
+      actions.append(exportButton);
       authCenterList.append(row);
     }
   }
@@ -1315,6 +1370,130 @@
     } finally { setBusy(false); renderCodexRuntime(); }
   }
 
+  function authModeDisplay(mode) {
+    return mode === "chatgpt" ? "OAuth" : mode === "apikey" ? "API Key" : "Agent Identity";
+  }
+
+  function closeAuthTransferConfirmation(result = null) {
+    const pending = pendingAuthTransferConfirmation;
+    pendingAuthTransferConfirmation = null;
+    if (authTransferDialog.open) authTransferDialog.close();
+    pending?.resolve(result);
+  }
+
+  function confirmSensitiveAuthTransfer({ operation, accountLabel = "", options = [] }) {
+    if (pendingAuthTransferConfirmation) closeAuthTransferConfirmation(null);
+    const exporting = operation === "export";
+    authTransferTitle.textContent = exporting ? "导出完整 auth.json？" : "导入完整 auth.json？";
+    authTransferSummary.textContent = exporting
+      ? `将为“${accountLabel || "所选账户"}”创建一个可形成登录态的独立凭证文件。`
+      : "所选文件会被官方 Codex 核验，并作为独立账户凭证保存在 AI Switch 本机账户库。";
+    authTransferMode.replaceChildren(...options.map((option) => {
+      const item = document.createElement("option");
+      item.value = option.mode;
+      item.textContent = option.label;
+      item.dataset.fileName = option.fileName;
+      return item;
+    }));
+    authTransferModeField.hidden = !exporting || options.length < 2;
+    authTransferAcknowledge.checked = false;
+    confirmAuthTransferButton.disabled = true;
+    confirmAuthTransferButton.textContent = exporting ? "选择保存位置" : "选择凭证文件";
+    authTransferDialog.showModal();
+    return new Promise((resolve) => {
+      pendingAuthTransferConfirmation = { resolve, operation, options };
+    });
+  }
+
+  function requestNativeAuthFile(operation, fileName = "ai-switch-auth.json") {
+    if (!authFileTransferAvailable || pendingAuthFileRequest) {
+      return Promise.reject(new Error("系统文件对话框当前不可用"));
+    }
+    const requestId = crypto.randomUUID();
+    const safeName = String(fileName || "ai-switch-auth.json").replace(/[^A-Za-z0-9._-]/g, "-").slice(0, 120);
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        if (pendingAuthFileRequest?.requestId !== requestId) return;
+        pendingAuthFileRequest = null;
+        reject(new Error("系统文件选择已超时，请重试"));
+      }, 10 * 60_000);
+      pendingAuthFileRequest = { requestId, operation, resolve, reject, timer };
+      if (window.chrome?.webview) {
+        window.chrome.webview.postMessage(`select-auth-file|${operation}|${requestId}|${safeName}`);
+      } else {
+        const target = `ai-switch://select-auth-file?operation=${encodeURIComponent(operation)}&requestId=${encodeURIComponent(requestId)}&fileName=${encodeURIComponent(safeName)}`;
+        window.open(target, "_blank");
+      }
+    });
+  }
+
+  async function importAccountAuthFile() {
+    if (busy || !authFileTransferAvailable) return;
+    const confirmed = await confirmSensitiveAuthTransfer({ operation: "import" });
+    if (!confirmed) return;
+    const selectedPath = await requestNativeAuthFile("import").catch((error) => {
+      showToast(error.message, "error");
+      return null;
+    });
+    if (!selectedPath) return;
+    setBusy(true, "正在使用官方 Codex 核验 auth.json…");
+    try {
+      const payload = await api("/api/auth-files/import", {
+        method: "POST",
+        body: { path: selectedPath }
+      });
+      await loadAccounts();
+      renderAuthCenter();
+      showToast(
+        `${authModeDisplay(payload.mode)} 凭证已${payload.merged ? "安全更新" : "导入"}；共享会话未改动`,
+        "success"
+      );
+    } catch (error) {
+      showToast(error.message, "error");
+    } finally {
+      setBusy(false);
+      renderAuthCenter();
+    }
+  }
+
+  async function exportAccountAuthFile(account) {
+    if (busy || !authFileTransferAvailable) return;
+    let options;
+    try {
+      const payload = await api(`/api/accounts/${account.id}/auth-file/options`);
+      options = payload.options || [];
+    } catch (error) {
+      showToast(error.message, "error");
+      return;
+    }
+    if (!options.length) {
+      showToast("该账户没有可单独导出的官方 auth.json", "error");
+      return;
+    }
+    const label = account.lastSnapshot?.email || account.api?.name || account.label || "所选账户";
+    const confirmed = await confirmSensitiveAuthTransfer({ operation: "export", accountLabel: label, options });
+    if (!confirmed) return;
+    const selected = options.find((option) => option.mode === confirmed.mode) || options[0];
+    const selectedPath = await requestNativeAuthFile("export", selected.fileName).catch((error) => {
+      showToast(error.message, "error");
+      return null;
+    });
+    if (!selectedPath) return;
+    setBusy(true, "正在以严格权限写入独立 auth.json…");
+    try {
+      const payload = await api(`/api/accounts/${account.id}/auth-file/export`, {
+        method: "POST",
+        body: { path: selectedPath, mode: selected.mode }
+      });
+      showToast(`${authModeDisplay(payload.mode)} auth.json 已安全导出，请勿分享给他人`, "success");
+    } catch (error) {
+      showToast(error.message, "error");
+    } finally {
+      setBusy(false);
+      renderAuthCenter();
+    }
+  }
+
   function requestCodexRuntimeSelection() {
     if (busy) return;
     if (window.chrome?.webview) {
@@ -1327,6 +1506,17 @@
   function handleHostMessage(message) {
     if (message?.type === "codex-runtime-selected" && message.path) {
       saveSelectedCodexRuntime(message.path);
+      return;
+    }
+    if (message?.type === "auth-file-selected" && pendingAuthFileRequest) {
+      if (
+        message.requestId !== pendingAuthFileRequest.requestId ||
+        message.operation !== pendingAuthFileRequest.operation
+      ) return;
+      const pending = pendingAuthFileRequest;
+      pendingAuthFileRequest = null;
+      clearTimeout(pending.timer);
+      pending.resolve(message.canceled ? null : (message.path || null));
     }
   }
 
@@ -1409,6 +1599,7 @@
     accounts = payload.accounts || [];
     accountsLoaded = true;
     render();
+    return accounts;
   }
 
   function formatUpdateSize(bytes) {
@@ -1540,7 +1731,7 @@
       const payload = await api("/api/update/apply", { method: "POST" });
       renderUpdateStatus(payload.update);
       if (isDesktopHost) {
-        window.chrome.webview.postMessage(payload.update?.hostAction === "restart-app" ? "apply-update" : "apply-update");
+        window.chrome.webview.postMessage("apply-update");
       } else {
         showToast("更新已准备好，请退出并重新打开 AI Switch", "success");
       }
@@ -1558,7 +1749,9 @@
     appVersionLabel.textContent = appVersion ? `v${appVersion}` : "版本";
     renderUpdateStatus(payload.update);
     credentialSwitchCapability = payload.credentialStore || credentialSwitchCapability;
+    authFileTransferAvailable = Boolean(payload.capabilities?.authFileTransfer);
     if (accountsLoaded) render();
+    renderAuthCenter();
     if (!credentialSwitchCapability.switchingSupported) {
       setStatus(`账户启动已停用：${credentialSwitchCapability.message}`, "warning");
     }
@@ -1601,6 +1794,12 @@
     const label = account.kind === "api"
       ? (account.api?.name || account.label || "API 接入")
       : (account.lastSnapshot?.email || "Codex 账户");
+    if (window.AiSwitchLaunchReauth.needsReauthorization(account)) {
+      launchReauthorization.request(account.id);
+      setStatus(`${label} 需要重新授权；完成后将继续本次启动。`, "warning");
+      await beginAuthorization(account.id, true);
+      return;
+    }
     setBusy(true, `正在切换到 ${label} 并启动 Codex…`);
     if (account.kind === "api") {
       api(`/api/accounts/${account.id}/query`, { method: "POST" })
@@ -1617,6 +1816,7 @@
           }
         });
     }
+    let reauthorizeAfterFailure = false;
     try {
       const result = await api(`/api/accounts/${account.id}/launch-codex`, {
         method: "POST"
@@ -1634,16 +1834,31 @@
         result.balanceInsufficient ? "warning" : "success"
       );
     } catch (error) {
-      setStatus(error.message, "error");
-      showToast(error.message, "error");
+      if (account.kind === "oauth") {
+        await loadAccounts().catch(() => {});
+        const latest = accounts.find((item) => item.id === account.id);
+        if (window.AiSwitchLaunchReauth.needsReauthorization(latest)) {
+          launchReauthorization.request(account.id);
+          reauthorizeAfterFailure = true;
+          setStatus(`${label} 的登录状态已失效；完成重新授权后将继续本次启动。`, "warning");
+          showToast("请重新授权，完成后会继续本次启动", "warning");
+        }
+      }
+      if (!reauthorizeAfterFailure) {
+        setStatus(error.message, "error");
+        showToast(error.message, "error");
+      }
     } finally {
       setBusy(false);
     }
+    if (reauthorizeAfterFailure) await beginAuthorization(account.id, true);
   }
 
   async function queryAll() {
     if (busy || !accounts.length) return;
-    const targets = accounts.filter((account) => account.status !== "authorizing");
+    const targets = accounts.filter((account) =>
+      account.status !== "authorizing" && account.kind !== "official"
+    );
     if (!targets.length) {
       showToast("当前没有可查询的账户", "error");
       return;
@@ -1757,6 +1972,7 @@
 
   async function pollAuthorization(id) {
     let consecutiveErrors = 0;
+    let refreshErrors = 0;
     while (activeLoginId === id) {
       await wait(1_000);
       let payload;
@@ -1767,28 +1983,77 @@
         authMessage.textContent =
           `正在等待桌面端接收授权结果…（重试 ${consecutiveErrors}/5）`;
         if (consecutiveErrors < 5) continue;
+        launchReauthorization.cancel(id);
         authMessage.textContent = `${error.message} 请取消后重新授权。`;
         cancelAuthButton.textContent = "关闭并清理";
+        setStatus(`授权状态轮询失败：${error.message}`, "error");
+        showToast("授权状态轮询失败，请关闭后重试", "error");
         return;
       }
       consecutiveErrors = 0;
       if (payload.state === "pending" || payload.state === "completing") continue;
       if (payload.state === "complete") {
+        const outcome = await window.AiSwitchLaunchReauth.completeAuthorization({
+          flow: launchReauthorization,
+          loginId: id,
+          resultAccountId: payload.resultAccountId,
+          refreshAccounts: loadAccounts,
+          launchAccount: async (account) => {
+            activeLoginId = null;
+            authPopup?.close();
+            authDialog.close();
+            setStatus(payload.warning || "重新授权完成，正在继续本次启动…", "success");
+            showToast(payload.warning || "重新授权完成，继续启动 Codex");
+            await launchCodex(account);
+          }
+        });
+        if (outcome.status === "retry") {
+          refreshErrors += 1;
+          const detail = outcome.error?.message || "账户状态暂时不可用";
+          authMessage.textContent = `授权已完成，但账户状态载入失败：${detail}。正在自动重试…`;
+          setStatus("授权已完成，正在重新载入账户状态…", "warning");
+          if (refreshErrors === 1) showToast("授权已完成，账户状态载入失败，正在重试", "warning");
+          continue;
+        }
+        if (outcome.status === "invalid-session") {
+          launchReauthorization.cancel();
+          authMessage.textContent = "授权会话与本次启动请求不匹配，请关闭后重新点击启动。";
+          cancelAuthButton.textContent = "关闭并清理";
+          setStatus("授权会话已失效，未执行启动。", "error");
+          showToast("授权会话已失效，请重新点击启动", "error");
+          return;
+        }
+        if (outcome.status === "launch-failed") {
+          const message = outcome.error?.message || "授权完成后启动失败";
+          setStatus(message, "error");
+          showToast(message, "error");
+          return;
+        }
+        if (outcome.status === "launched") return;
         activeLoginId = null;
         authPopup?.close();
         authDialog.close();
-        await loadAccounts();
         setStatus(payload.warning || "新账户授权并查询完成。", "success");
         showToast(payload.warning || "账户已添加");
         return;
       }
+      launchReauthorization.cancel(id);
       authMessage.textContent = payload.error || "授权未完成，请重试。";
       cancelAuthButton.textContent = "关闭并清理";
       return;
     }
   }
 
-  async function beginAuthorization(reauthorizeAccountId = null) {
+  function handleAuthorizationPollFailure(id, error) {
+    if (activeLoginId !== id) return;
+    launchReauthorization.cancel(id);
+    const message = error?.message || "授权状态轮询意外中断";
+    authMessage.textContent = `${message} 请关闭后重新授权。`;
+    cancelAuthButton.textContent = "关闭并清理";
+    setStatus(`授权状态轮询失败：${message}`, "error");
+    showToast("授权状态轮询失败，请关闭后重试", "error");
+  }
+  async function beginAuthorization(reauthorizeAccountId = null, continueLaunch = false) {
     authPopup = isDesktopHost
       ? null
       : window.open("about:blank", "codex-official-auth");
@@ -1803,13 +2068,19 @@
         method: "POST"
       });
       activeLoginId = payload.id;
+      if (continueLaunch && !launchReauthorization.bind(reauthorizeAccountId, payload.id)) {
+        throw new Error("本次启动的重新授权状态已失效，请重新点击启动");
+      }
       authMessage.textContent =
         reauthorizeAccountId
           ? "请登录当前账户对应的 OpenAI 账号。验证一致后会原子替换旧凭证。"
           : "请在刚打开的 OpenAI 页面登录并确认授权。本窗口会自动接收完成状态。";
       openOfficialAuthorization(payload.authUrl);
-      pollAuthorization(payload.id);
+      void pollAuthorization(payload.id).catch((error) => {
+        handleAuthorizationPollFailure(payload.id, error);
+      });
     } catch (error) {
+      if (continueLaunch) launchReauthorization.cancel();
       authPopup?.close();
       authMessage.textContent = error.message;
       cancelAuthButton.textContent = "关闭";
@@ -1944,6 +2215,7 @@
   async function cancelAuthorization() {
     const id = activeLoginId;
     activeLoginId = null;
+    launchReauthorization.cancel(id);
     if (id) {
       try {
         await api(`/api/logins/${id}/cancel`, { method: "POST" });
@@ -2082,6 +2354,23 @@
     await loadAccounts();
     renderAuthCenter();
     showToast("授权状态已从本机账户库重新载入");
+  });
+  importAuthFileButton.addEventListener("click", importAccountAuthFile);
+  authTransferAcknowledge.addEventListener("change", () => {
+    confirmAuthTransferButton.disabled = !authTransferAcknowledge.checked;
+  });
+  authTransferDialog.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    closeAuthTransferConfirmation(null);
+  });
+  cancelAuthTransferButton.addEventListener("click", () => closeAuthTransferConfirmation(null));
+  confirmAuthTransferButton.addEventListener("click", () => {
+    if (!authTransferAcknowledge.checked || !pendingAuthTransferConfirmation) return;
+    const selected = authTransferMode.selectedOptions[0];
+    closeAuthTransferConfirmation({
+      mode: selected?.value || null,
+      fileName: selected?.dataset.fileName || null
+    });
   });
   createBackupButton.addEventListener("click", async () => {
     if (busy) return;
