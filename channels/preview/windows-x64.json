@@ -1,22 +1,22 @@
 {
   "schema": 1,
-  "version": "1.15.1-preview.1",
+  "version": "1.15.2-preview.1",
   "minimumVersion": "1.13.0",
   "minimumHostVersion": null,
   "mandatory": false,
   "rollout": 100,
-  "publishedAt": "2026-08-24T02:04:22.570Z",
+  "publishedAt": "2026-08-26T00:31:34.010Z",
   "notes": [
-    "Native auth.json import and export dialogs with local-only credential handling",
-    "Reliable streaming termination and exactly-once launch resume after reauthorization",
-    "Verified pre-restore safety backup retention"
+    "Bundled and verified official Codex CLI for reliable Windows account launch",
+    "Windows Store desktop activation through the registered system application identity",
+    "Runtime preflight before desktop, credential, configuration, or session side effects"
   ],
   "packages": {
     "win32-x64": {
-      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.15.1-preview.1/AI-Switch-Windows-x64-v1.15.1-preview.1.zip",
-      "sha256": "c658813c3481796bacaa8fcc13958cfa22076ad12ceabc53e43f47ad3e00b769",
-      "size": 36434839
+      "url": "https://github.com/GitHub1874/ai-switch/releases/download/v1.15.2-preview.1/AI-Switch-Windows-x64-v1.15.2-preview.1.zip",
+      "sha256": "c89da985e96b1c948d1ef86a738782a1084bb496769391be31b726c69e88d4c4",
+      "size": 167829024
     }
   },
-  "signature": "4n5DzsUf8GIwF4o/83r5pQH8JPYfajjvq4eQsI3e3SoqTzFgo0ROvZU8Z870oFpbCS2TWL+cl1NZPqR5YI6EAw=="
+  "signature": "PyIDmiXqQwva69kZUlz6UhG0buqDmdToJu7D9R8bQTSlAyZZFJtFnhp0fF/DohoXo1igpuG0ZHElR9UZphj7Ag=="
 }
